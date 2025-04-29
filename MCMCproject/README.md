@@ -2,8 +2,6 @@
 
 This project simulates photon transport through a medium using a Monte Carlo method, taking into account **scattering** and **absorption** based on specified optical properties. The simulation uses a Henyey-Greenstein scattering phase function to determine scattering angles and outputs distributions of photons arriving at a virtual camera.
 
-I do research as part of the CamSim group with Carsten Rott, and much of my working involves running simulatiosn of this sort on super computers. Of course the simulation code used in IceCube's CamSim group are much more nuanced and complicated, I recreated it using the same henyey scattering function and I am very pleased with the result. I have gained a much better understanding of how Monte Carlo sampling works and is used, as well as how photons are simulated. Additionally, my resulting graphs are very simialr to the ones made using the official PPC code from IceCube.
-
 ## Features
 
 - Models both **scattering** and **absorption** events probabilistically.
