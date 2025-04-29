@@ -2,16 +2,13 @@ import numpy as np
 from photon import photon
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
-
-scattering_length = 5
-absoprtion_length = 1000
+import seaborn as sns
 x0 = 0
 y0 = 0
-e0=1
 theta0 = 0
 g = 0.85
 pos = 50
-nphotons = 10**5
+nphotons = 10**3
 cam_size = 50
 
 def dist_event(sl, al): #Based on exponential distribution with params scattering and absorption length
@@ -30,22 +27,13 @@ def dist_event(sl, al): #Based on exponential distribution with params scatterin
     return [xs,xa]
 
 def henyey_scattering(g, size=1, return_cos=False): #Simulates angle using henyey greenstein scattering function
-    """
-    Sample scattering angles from the Henyey-Greenstein phase function.
-    Parameters:
-    - g (float): Anisotropy factor (-1 to 1). g = 0 is isotropic.
-    - size (int): Number of samples to generate.
-    - return_cos (bool): If True, return cos(theta) instead of theta in radians.
-    Returns:
-    - ndarray: Array of angles in radians or cos(theta) values.
-    """
     xi = np.random.uniform(0, 1, size)
     if g == 0:
-        cos_theta = 2 * xi - 1
+        cos_theta = 2*xi-1
     else:
-        num = 1 - g**2
-        denom = 1 - g + 2 * g * xi
-        cos_theta = (1 + g**2 - (num / denom)**2) / (2 * g)
+        num = 1-g**2
+        denom = 1-g+2*g*xi
+        cos_theta = (1+g**2-(num/denom)**2)/(2*g)
 
     theta = np.arccos(cos_theta)
     if np.random.rand() < 0.5:        # Without this addition angle is always positive
@@ -79,7 +67,7 @@ def run(num_photons, sl, al): #Generates photon objects and feeds them into star
     miss_counter = 0
     abs_counter = 0
     for i in range(num_photons):
-        obj = photon(x0,y0,theta0,e0)
+        obj = photon(x0,y0,theta0)
         start(obj, sl, al)
         photons.append(obj)
 
@@ -122,14 +110,52 @@ out_sl10_al150 = run(nphotons, 10, 150)
 out_sl10_al1500 = run(nphotons, 10, 15000)
 out_al = [out_sl10_al50, out_sl10_al150, out_sl10_al1500]
 
-title = ['Histogram: 25m Scattering', 'Histogram: 15m Scattering', 'Histogram: 5m Scattering']
+title1 = ['Histogram: 25m Scattering 1000m Absorption', 
+         'Histogram: 15m Scattering 1000m Absorption', 
+         'Histogram: 5m Scattering 1000m Absorption']
 
-for o, i in enumerate(out_sl):
-    plt.hist(i, bins=61, alpha = 0.5, color=colors[o],edgecolor='black')
-    plt.title(title[o])
-plt.show()
+title2 = ['Histogram: 10m Scattering 50m Absorption', 
+         'Histogram: 10m Scattering 150m Absorpotion', 
+         'Histogram: 10m Scattering 15000 Absorption']
+
+
+fig, axs = plt.subplots(len(out_al), 2, figsize=(12, 4 * len(out_al)))
 
 for o, i in enumerate(out_al):
-    plt.hist(i, bins=61, alpha = 0.8, color=colors[o],edgecolor='black')
+    # Count histogram
+    axs[o, 0].hist(i, bins=61, alpha=0.75, color=colors[o], edgecolor='black')
+    axs[o, 0].set_title(f'{title2[o]} - Count Histogram')
+
+    # Density histogram
+    sns.histplot(i, bins=61, stat='density', ax=axs[o, 1],
+                 color=colors[o], edgecolor='black', alpha=0.75)
+
+    # KDE overlay in red
+    sns.kdeplot(i, ax=axs[o, 1], color='red', linewidth=2)
+
+    axs[o, 1].set_title(f'{title2[o]} - Density + KDE')
+
+plt.tight_layout()
+plt.savefig('VariedAbsorption.pdf')
 plt.show()
 
+
+fig, axs = plt.subplots(len(out_sl), 2, figsize=(12, 4 * len(out_sl)))
+
+for o, i in enumerate(out_sl):
+    # Count histogram
+    axs[o, 0].hist(i, bins=61, alpha=0.75, color=colors[o], edgecolor='black')
+    axs[o, 0].set_title(f'{title1[o]} - Count Histogram')
+
+    # Density histogram
+    sns.histplot(i, bins=61, stat='density', ax=axs[o, 1],
+                 color=colors[o], edgecolor='black', alpha=0.75)
+
+    # KDE overlay in red
+    sns.kdeplot(i, ax=axs[o, 1], color='red', linewidth=2)
+
+    axs[o, 1].set_title(f'{title1[o]} - Density + KDE')
+
+plt.tight_layout()
+plt.savefig('VariedScattering.pdf')
+plt.show()
